@@ -1,9 +1,0 @@
-streamlit
-graphrag
-google-genai
-google-generativeai
-pymongo
-dnspython
-pandas
-python-dotenv
-tiktoken
