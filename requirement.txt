@@ -1,7 +1,7 @@
 streamlit
-graphrag>=3.1.0,<3.14.0
 google-generativeai
 pymongo
 dnspython
 pandas
 python-dotenv
+tiktoken
