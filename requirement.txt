@@ -1,9 +1,7 @@
-google-generativeai
-pymongo
 streamlit
+graphrag>=3.1.0,<3.14.0
+google-genai
+pymongo
+dnspython
 pandas
-networkx
-sentence-transformers
-numpy
-scikit-learn
-graphrag==0.3.6
+python-dotenv
