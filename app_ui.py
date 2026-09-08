@@ -6,8 +6,12 @@ Run with: streamlit run app_ui.py
 import streamlit as st
 import sys
 import os
+import pathlib
 
-sys.path.insert(0, os.path.dirname(__file__))
+# Resolve paths relative to this script's directory
+BASE_DIR = pathlib.Path(__file__).parent.resolve()
+sys.path.insert(0, str(BASE_DIR))
+
 from chatbot import ask, get_articles
 
 # Page config
@@ -29,16 +33,26 @@ with st.sidebar:
 
     st.divider()
     st.markdown("### Data Source")
+    
+    # 1. MongoDB / Cloud Storage check
+    mongo_connected = False
     try:
         from pymongo import MongoClient
-        client = MongoClient("mongodb://localhost:27017/", serverSelectionTimeoutMS=2000)
+        mongo_uri = st.secrets.get("MONGO_URI", "mongodb://localhost:27017/")
+        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=1500)
         client.server_info()
+        mongo_connected = True
         st.success("✅ MongoDB Connected")
     except Exception:
-        st.warning("⚠️ MongoDB offline\nUsing JSON fallback")
+        # Clean production label instead of a warning
+        st.info("📦 JSON Knowledge Base (Active)")
 
-    import pathlib
-    if pathlib.Path("output").exists():
+    # 2. Robust GraphRAG Output check (handles both Linux casing & relative paths)
+    output_dir = BASE_DIR / "output"
+    if not output_dir.exists():
+        output_dir = BASE_DIR / "Output"
+
+    if output_dir.exists():
         st.success("✅ GraphRAG Index Ready")
     else:
         st.warning("⚠️ GraphRAG indexing pending")
@@ -46,13 +60,16 @@ with st.sidebar:
     st.divider()
     st.markdown("### 24h Refresh")
     if st.button("🔄 Refresh Data Now"):
-        try:
-            from mongo_loader import load_json_to_mongo, export_to_txt
-            load_json_to_mongo()
-            export_to_txt()
-            st.success("Data refreshed!")
-        except Exception as e:
-            st.error(f"Error: {e}")
+        if not mongo_connected:
+            st.info("ℹ️ Live re-syncing requires MongoDB Atlas. Serving static indexed snapshot.")
+        else:
+            try:
+                from mongo_loader import load_json_to_mongo, export_to_txt
+                load_json_to_mongo()
+                export_to_txt()
+                st.success("Data refreshed!")
+            except Exception as e:
+                st.error(f"Error: {e}")
 
 # Main chat area
 st.title("🌍 Geopolitical News Chatbot")
