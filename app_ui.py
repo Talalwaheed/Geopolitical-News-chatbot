@@ -47,12 +47,11 @@ with st.sidebar:
         # Clean production label instead of a warning
         st.info("📦 JSON Knowledge Base (Active)")
 
-    # 2. Robust GraphRAG Output check (handles both Linux casing & relative paths)
+    # 2. Robust GraphRAG Output check
     output_dir = BASE_DIR / "output"
-    if not output_dir.exists():
-        output_dir = BASE_DIR / "Output"
+    parquet_files = list(BASE_DIR.glob("*.parquet")) + list(BASE_DIR.glob("**/*.parquet"))
 
-    if output_dir.exists():
+    if output_dir.exists() or len(parquet_files) > 0:
         st.success("✅ GraphRAG Index Ready")
     else:
         st.warning("⚠️ GraphRAG indexing pending")
